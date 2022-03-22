@@ -19,10 +19,10 @@ class Parser {
   private diffTool = new Difftool();
 
   constructor(private config: ParserOptions) {
-    this.env = configure(this.config.templateLocation);
     if (!config.templateLocation) {
       throw new Error("templateLocation is required");
     }
+    this.env = configure(this.config.templateLocation);
     if (config.outputLocation) {
       if (!existsSync(config.outputLocation)) {
         throw new Error("outputLocation does not exist");

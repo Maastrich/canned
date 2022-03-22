@@ -3,7 +3,6 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import Parser from './Parser';
 
-
 async function renderTemplate(outputFolder: string): Promise<void> {
   const parser = new Parser({
     templateLocation: './templates',

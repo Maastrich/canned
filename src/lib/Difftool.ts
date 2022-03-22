@@ -36,6 +36,7 @@ class Difftool {
       app.use(cors());
       app.use(bodyParser.json());
       app.use(bodyParser.urlencoded({ extended: true }));
+      app.use(express.static(join(__dirname, "../webapp")));
       // eslint-disable-next-line prefer-const
       app.get("/diff", (req: Request, res: Response) => {
         const file = this.files[0];
@@ -61,7 +62,7 @@ class Difftool {
       })
       this.webServer = app.listen(8787, () => {
         this.emit("info", "Web server started");
-        open("http://localhost:3000");
+        open("http://localhost:8787");
       });
       this.webServer.on('close', () => {
         console.log('Web server closed');
