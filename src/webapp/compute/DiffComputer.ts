@@ -44,6 +44,7 @@ interface ComputedLineInformations {
 }
 
 interface DiffConfig {
+  path: string;
   oldValue: string;
   newValue: string;
   disableWordDiff?: boolean;
@@ -58,24 +59,24 @@ interface Diff {
 }
 
 class Line {
-  private oldIndex = 0;
-  private newIndex = 0;
+  private id: string = new Date().toISOString();
   private counter = 0;
   private lines: string[] = [];
-  private infos: Array<LineInformations>;
+  public infos: Array<LineInformations>;
   private type: "added" | "removed" | "unchanged";
 
   private constructLines(value: string): Array<string> {
-    if (!value) {
+    if (!value || !value.length) {
       return [];
     }
-    return value.split('\n');
+    return value.replace(/(\n)+$/, "").split('\n');
   }
 
   constructor(
     private diffs: Array<Diff>,
-    private computedLines: Array<string> = [],
-    private pushComputedLineParent: (line: string) => void,
+    public computedLines: Array<string>,
+    public oldIndex: number,
+    public newIndex: number,
     private compareMethod: DiffMethod = 'diffChars',
     value: string,
     private diffIndex: number,
@@ -83,16 +84,12 @@ class Line {
     removed: boolean,
     private evaluateOnlyFirstLine?: boolean
   ) {
-    if (added && removed) {
-      console.error("oops")
-    }
     this.type = added ? 'added' : removed ? 'removed' : 'unchanged';
     this.lines = this.constructLines(value);
   }
 
   private pushComputedLine(line: string): void {
     this.computedLines.push(line);
-    this.pushComputedLineParent(line);
   }
 
   private pushInfo(info: LineInformations): Line {
@@ -103,29 +100,37 @@ class Line {
     return this;
   }
 
-  private computeDefault(value: string, index: number): Line {
+  private computeDefault(value: string): Line {
     this.newIndex++;
     this.oldIndex++;
     const element: DiffElement<"*"> = {
       type: 'unchanged',
       value,
-      lineNumber: index
     };
-    return this.pushInfo({ old: element, new: element });
+    return this.pushInfo({
+      old: {
+        ...element,
+        lineNumber: this.oldIndex,
+      }, new: {
+        ...element,
+        lineNumber: this.newIndex,
+      }
+    });
   }
 
-  private computeAdded(value: string, index: number): Line {
+  private computeAdded(value: string): Line {
     this.newIndex++;
     const element: DiffElement<"*"> = {
       type: 'added',
       value,
-      lineNumber: index
+      lineNumber: this.newIndex,
     };
     return this.pushInfo({ old: undefined, new: element });
   }
 
   private spawnNewElement(value: string): Line {
-    return new Line(this.diffs, this.computedLines, this.pushComputedLine.bind(this), this.compareMethod, value, this.diffIndex, true, false, true);
+    return new Line(
+      this.diffs, this.computedLines, this.oldIndex, this.newIndex, this.compareMethod, value, this.diffIndex, true, false, true);
   }
 
   private computeRemoved(value: string, index: number): Line {
@@ -144,22 +149,23 @@ class Line {
       return this.pushInfo({ old: oldElement, new: undefined });
     }
     const right = this.spawnNewElement(nextDiff.value as string);
-    const newElement = right.compute()[0].new;
-    console.log("newElement", `${this.diffIndex + 1}-${index}`);
+    const newElement = right.compute().infos[0].new;
     this.pushComputedLine(`${this.diffIndex + 1}-${index}`);
     const { old, new: newDiff } = this.computeDiff(
       value,
       newElement.value as string,
     )
     oldElement.value = old;
+    this.newIndex++;
+    newElement.lineNumber = this.newIndex;
     newElement.value = newDiff;
     return this.pushInfo({ old: oldElement, new: newElement });
   }
 
   private computeDiff(oldValue: string, newValue: string): ComputedLineInformations {
     const diffArray: JsDiffChangeObject[] = d[this.compareMethod](
-      oldValue,
-      newValue,
+      oldValue.trimEnd(),
+      newValue.trimEnd(),
     );
     const oldInfos: Array<DiffElement<"*">> = [];
     const newInfos: Array<DiffElement<"*">> = [];
@@ -189,17 +195,14 @@ class Line {
     };
   }
 
-  compute(): Array<LineInformations> {
-    if (!this.evaluateOnlyFirstLine) {
-      console.log("compute", this.diffIndex, this.lines);
-    }
+  compute(): Line {
     this.lines.forEach((line, index) => {
       if (this.computedLines.includes(`${this.diffIndex}-${index}`) || (this.evaluateOnlyFirstLine && index !== 0)) {
         return;
       }
       switch (this.type) {
         case 'added': {
-          this.computeAdded(line, index);
+          this.computeAdded(line);
           break;
         }
         case "removed": {
@@ -207,11 +210,11 @@ class Line {
           break;
         }
         default: {
-          this.computeDefault(line, index);
+          this.computeDefault(line);
         }
       }
     });
-    return this.infos;
+    return this;
   }
 }
 
@@ -226,37 +229,45 @@ export default class DiffComputer {
     this.diffs = diffLines(
       this.config.oldValue,
       this.config.newValue, {
-      newlineIsToken: true,
-      ignoreWhitespace: false,
       ignoreCase: false,
+      newlineIsToken: true,
     });
+    console.debug(config);
   }
 
   private computedLines: string[] = [];
+
+  private oldIndex = 0;
+  private newIndex = 0;
 
   private pushComputedLine(line: string): void {
     this.computedLines.push(line);
   }
 
   public compute(): DiffComputer {
-    console.log({ diff: this.diffs })
     this.diffs.forEach(
-      (diff: Diff, index: number): void => {
-        const lines = new Line(
+      (diff: d.Change, index: number): void => {
+        const line = new Line(
           this.diffs,
           this.computedLines,
-          this.pushComputedLine.bind(this),
+          this.oldIndex,
+          this.newIndex,
           this.config.compareMethod,
-          diff.value as string,
+          diff.value,
           index,
           diff.added,
           diff.removed
-        ).compute()
-        if (lines) {
-          this.lineInfos.push(...lines);
+        )
+        const { oldIndex, newIndex, computedLines, infos } = line.compute()
+        this.oldIndex = oldIndex;
+        this.newIndex = newIndex;
+        this.computedLines.push(...(computedLines) ?? []);
+        if (infos) {
+          this.lineInfos.push(...infos);
         }
       }
     )
+    console.debug(this.lineInfos);
     return this;
   }
 

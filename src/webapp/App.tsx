@@ -1,11 +1,11 @@
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 
-import Diff from './components/Diff';
+import Viewer from './components/Viewer';
 
 const GlobalStyle = createGlobalStyle`
   span {
-    box-sizing: border-box;
+    /* box-sizing: border-box; */
   }
 `;
 
@@ -23,7 +23,7 @@ function App(): JSX.Element {
   return (
     <AppUI>
       <GlobalStyle />
-      <Diff />
+      <Viewer />
     </AppUI>
   );
 }

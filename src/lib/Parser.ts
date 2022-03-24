@@ -52,7 +52,8 @@ class Parser {
   private renderContent(path: string): string {
     try {
       const content = this.env.render(path, { context: this.config.context });
-      return content;
+      return content
+      // .replace(/(\n)+$/, "");
     } catch {
       this.emit("error", `Failed to load template: '${path}'`);
     }
@@ -105,7 +106,7 @@ class Parser {
         if (existsSync(fileName)) {
           this.diffTool.addFile(fileName, content);
         } else {
-          writeFileSync(fileName, content);
+          writeFileSync(fileName, `${content}\n`);
         }
       } catch (err) {
         this.emit("error", `Failed to render file ${fileName}: ${err}`);

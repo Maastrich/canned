@@ -1,12 +1,13 @@
-import { spawnSync } from "child_process";
 import { prompt } from "enquirer";
-import { readFileSync, unlinkSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import express, { Request, Response } from "express";
 import open from "open";
 import { Server } from "http";
 import cors from "cors";
 import bodyParser from "body-parser";
+import { createHash } from "crypto";
+import { createPatch } from "diff";
 
 interface File {
   path: string;
@@ -14,21 +15,17 @@ interface File {
   newContent: string;
 }
 
+function shaDiff(file: File): boolean {
+  const { oldContent, newContent } = file;
+  const oldHash = createHash("sha256").update(oldContent).digest();
+  const newHash = createHash("sha256").update(newContent).digest();
+  return oldHash === newHash;
+}
+
 class Difftool {
   private eventListener: Record<string, (message: string) => void> = {};
   private files: File[] = [];
   private webServer: Server;
-
-  private getDiff(str1: string, str2: string): string {
-    const file1 = join("/tmp", "maastrich-template-tmpfile1.txt");
-    const file2 = join("/tmp", "maastrich-template-tmpfile2.txt");
-    writeFileSync(file1, str1);
-    writeFileSync(file2, str2);
-    const diff = spawnSync("git", ["diff", "--minimal", file1, file2], { stdio: "pipe" });
-    unlinkSync(file1);
-    unlinkSync(file2);
-    return diff.stdout.toString();
-  }
 
   private async runWeb(): Promise<void> {
     return new Promise<void>((resolve) => {
@@ -37,12 +34,9 @@ class Difftool {
       app.use(bodyParser.json());
       app.use(bodyParser.urlencoded({ extended: true }));
       app.use(express.static(join(__dirname, "../webapp")));
-      // eslint-disable-next-line prefer-const
-      app.get("/diff", (req: Request, res: Response) => {
-        const file = this.files[0];
-        res.send(file);
-        if (!file) {
-          console.log("No files to diff");
+      app.get("/diff", (_: Request, res: Response) => {
+        res.send(this.files);
+        if (!this.files) {
           this.webServer.close();
           resolve();
         }
@@ -65,7 +59,7 @@ class Difftool {
         open("http://localhost:8787");
       });
       this.webServer.on('close', () => {
-        console.log('Web server closed');
+        process.stdout.write('Web server closed');
         resolve();
       })
     });
@@ -74,9 +68,9 @@ class Difftool {
 
   private async rrunTerminal(): Promise<void> {
     for await (const file of this.files) {
-      const diff = this.getDiff(file.oldContent, file.newContent);
+      const diff = createPatch(file.path, file.oldContent, file.newContent);
       if (diff) {
-        console.log(diff);
+        process.stdout.write(diff);
         const { action } = await prompt<{ action: string }>({
           type: "select",
           name: "action",
@@ -94,6 +88,9 @@ class Difftool {
   }
 
   public async run(): Promise<void> {
+    if (!this.files.length && !this.files.find(f => shaDiff(f))) {
+      return;
+    }
     const { output } = await prompt<{ output: string }>({
       type: "select",
       message: "Do you want to open the diff in web browser or terminal ?",
@@ -128,9 +125,11 @@ class Difftool {
 
   public addFile(file: string, newContent: string): Difftool {
     const oldContent = this.getFileContent(file).toString();
+    console.log({ oldContent });
     this.files.push({
       path: file,
-      oldContent,
+      oldContent: oldContent,
+      // ?.replace(/(\n)+$/, ""),
       newContent,
     });
     return this;

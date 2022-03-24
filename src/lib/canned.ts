@@ -10,8 +10,8 @@ async function renderTemplate(outputFolder: string): Promise<void> {
     entryPoint: '{{context.name}}',
     context: {
       name: "test",
-      title: 'Hello World with changes',
-      message: 'This is a message with changes',
+      title: 'Hello World with new changes',
+      message: 'This is a message with new changes',
       file: 'index',
       folder: 'hello',
     },

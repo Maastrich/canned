@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { DiffElement, LineInformations } from "../../../compute/DiffComputer";
+import Section from "./Section";
 
 interface SectionBaseProps {
   diffs: Array<LineInformations>;
@@ -19,17 +20,17 @@ function SectionBase({ diffs, type }: SectionBaseProps): JSX.Element {
       if (typeof element.value !== "string") {
         element.value = (element.value as Array<DiffElement<"*">>).filter((value) => {
           const filter = type === "new" ? ["added", "unchanged"] : ["removed", "unchanged"];
-          return filter.includes(value.type);
+          return filter.includes(value?.type);
         })
       }
       return element;
     }).filter((value) => {
       const filter = type === "new" ? ["added", "unchanged"] : ["removed", "unchanged"];
-      return filter.includes(value.type);
+      return filter.includes(value?.type);
     })
-  }, [])
-  console.log({ lines });
-  return (null)
+  }, [diffs, type])
+
+  return <Section diffs={diffs} />;
 }
 
 export default SectionBase;

@@ -1,28 +1,26 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { computeLineInformation } from "../../compute/compute-lines";
+import React, { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import DiffViewer from "react-diff-viewer";
+import { DotLoader } from "react-spinners";
 import DiffComputer from "../../compute/DiffComputer";
 
 import Viewer from "./Viewer";
 
-interface ViewerBaseProps {
-  title: string;
-}
+export default function ViewerBase(): JSX.Element {
 
-export default function ViewerBase({ title }: ViewerBaseProps): JSX.Element {
-
-  const [diff, setDiff] = useState<{ oldContent: string, newContent: string, path: string } | undefined>();
+  const [diff, setDiff] = useState<Array<{ oldContent: string, newContent: string, path: string }> | undefined>();
   const [loading, setLoading] = useState(true);
 
   const diffs = useMemo(() => {
     if (!diff) {
-      console.log("no diff");
       return;
     }
-    const test = new DiffComputer({
-      oldValue: diff.oldContent,
-      newValue: diff.newContent,
-    })
-    return test.compute().lineInfos;
+    return diff.map((d) => {
+      return new DiffComputer({
+        oldValue: d.oldContent,
+        newValue: d.newContent,
+        path: d.path,
+      }).compute().lineInfos;
+    });
   }, [diff]);
 
   const updateFiles = useCallback(async () => {
@@ -38,6 +36,7 @@ export default function ViewerBase({ title }: ViewerBaseProps): JSX.Element {
 
   const onClick = useCallback(async (e) => {
     setLoading(true);
+    const file = diff.find(d => d.path === e.path);
     await fetch("http://localhost:8787/diff", {
       method: "POST",
       headers: {
@@ -45,7 +44,7 @@ export default function ViewerBase({ title }: ViewerBaseProps): JSX.Element {
       },
       body: JSON.stringify({
         accept: e.target.name,
-        path: diff?.path
+        path: file?.path
       })
     });
     updateFiles();
@@ -55,9 +54,12 @@ export default function ViewerBase({ title }: ViewerBaseProps): JSX.Element {
     updateFiles();
   }, [updateFiles])
 
+  if (loading) {
+    return <DotLoader />
+  }
+
   return (
     <Viewer
-      title={title}
       diffs={diffs}
     />
 
