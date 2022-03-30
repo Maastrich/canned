@@ -1,4 +1,0 @@
-{
-  "include": ["src/webapp/**/*", "public"],
-  "extends": "./tsconfig.json",
-}
