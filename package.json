@@ -4,9 +4,6 @@
   "author": "Maastrich",
   "repository": "https://github.com/Maastrich/canned",
   "license": "MIT",
-  "engines": {
-    "node": "^16.13"
-  },
   "private": false,
   "main": "dist/canned.js",
   "module": "dist/canned.js",
