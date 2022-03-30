@@ -8,7 +8,8 @@
     "node": "^16.13"
   },
   "private": false,
-  "module": "dist/canned.cjs.js",
+  "main": "dist/canned.js",
+  "module": "dist/canned.js",
   "source": "src/canned.ts",
   "types": "dist/canned.d.ts",
   "scripts": {
