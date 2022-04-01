@@ -1,4 +1,4 @@
-import { FileSystem, Git, Template } from "@src/classes";
+import { FileSystem, Git, Template } from "../classes";
 
 async function render(template: string, context?: object): Promise<FileSystem> {
   if (Git.isGitUrl(template)) {
@@ -11,7 +11,7 @@ async function render(template: string, context?: object): Promise<FileSystem> {
     name: "canned.json",
     content: JSON.stringify(
       {
-        ...tpl.defaultContext,
+        ...tpl.defaultContext(),
         ...context,
       },
       null,

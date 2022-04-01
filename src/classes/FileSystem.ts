@@ -14,10 +14,14 @@ class FileSystem {
   public path: string;
   public folders: Array<FileSystem> = [];
   public files: Array<File> = [];
+  public exists: boolean;
 
   constructor(path?: string) {
     if (path && existsSync(path)) {
       this.load(path);
+      this.exists = true;
+    } else {
+      this.exists = false;
     }
   }
 

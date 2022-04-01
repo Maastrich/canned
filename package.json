@@ -1,12 +1,11 @@
 {
-  "version": "0.0.1-dev",
+  "version": "1.0.0-dev",
   "name": "@maastrich/canned",
   "author": "Maastrich",
   "repository": "https://github.com/Maastrich/canned",
   "license": "MIT",
   "private": false,
   "main": "dist/canned.js",
-  "module": "dist/canned.js",
   "source": "src/canned.ts",
   "types": "dist/canned.d.ts",
   "scripts": {
@@ -15,17 +14,16 @@
     "eslint": "if [ -n \"$CI\" ]; then eslint src/** --max-warnings=0; else eslint src/**; fi",
     "prettier": "prettier -c .",
     "prebuild": "rm -rf dist",
-    "build": "rollup -c",
-    "start": "node dist/canned.cjs.js",
+    "build": "tsc --build",
     "prebuild-watch": "rm -rf dist",
-    "postbuild-watch": "yarn build-watch",
-    "build-watch": "rollup -cw",
-    "prepack": "npm run build"
+    "build-watch": "tsc --watch",
+    "prepack": "yarn build"
   },
   "dependencies": {
     "diff": "^5.0.0",
     "nunjucks": "^3.2.3",
-    "simple-git": "^3.4.0"
+    "simple-git": "^3.4.0",
+    "uniqid": "^5.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.17.8",
@@ -38,6 +36,7 @@
     "@types/diff": "^5.0.2",
     "@types/node": "^16.11.7",
     "@types/nunjucks": "^3.2.1",
+    "@types/uniqid": "^5.3.2",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
     "@typescript-eslint/parser": "^5.8.1",
     "eslint": "^8.11.0",

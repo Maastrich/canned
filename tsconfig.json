@@ -8,12 +8,6 @@
   ],
   "include": ["src/**/*"],
   "compilerOptions": {
-    "baseUrl": "./",
-    "paths": {
-      "@src/*": ["./src/*"]
-    },
-    "target": "esnext",
-    "module": "esnext",
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -23,7 +17,6 @@
     "outDir": "dist",
     "removeComments": true,
     "declaration": true,
-    "declarationDir": ".",
     "jsx": "react"
   }
 }

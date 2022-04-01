@@ -10,7 +10,7 @@ class Template extends EventEmitter<Template> {
   private entrypoint: string;
   private templateFs: FileSystem;
 
-  get defaultContext(): object {
+  defaultContext(): object {
     return this.context ?? {};
   }
 
@@ -59,7 +59,10 @@ class Template extends EventEmitter<Template> {
       outputFs.addFolder(await this.renderFileSystem(folder, context));
     });
     const files = fs.files.map(async (file) => {
-      const name = await this.renderString(file.name, context);
+      const name = await this.renderString(
+        file.name.replace(/\.njk$/, ""),
+        context
+      );
       const content = await this.renderString(file.content, context);
       outputFs.addFile({ name, content });
       return;
