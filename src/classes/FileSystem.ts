@@ -32,7 +32,7 @@ class FileSystem {
 
   private loadFile(path: string): File {
     const fileName = basename(path);
-    const fileContent = readFileSync(path, "utf8");
+    const fileContent = readFileSync(path, "utf8").trimEnd();
     return {
       name: fileName,
       content: fileContent,

@@ -1,5 +1,6 @@
 import * as d from "diff";
 import { diffLines } from "diff";
+import { ChangeType } from "../types";
 
 export type DiffMethod =
   | "diffChars"
@@ -28,7 +29,7 @@ type SpreadAll<T extends DiffElementType | "*"> = T extends "*"
 
 export interface ChildDiffElement<
   T extends DiffElementType | "*" = "unchanged"
-> {
+  > {
   type: SpreadAll<T>;
   value: string;
   lineNumber?: number;

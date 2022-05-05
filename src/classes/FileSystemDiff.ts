@@ -1,8 +1,9 @@
 import { createHash } from "crypto";
-import { createPatch, merge, ParsedDiff } from "diff";
+import { createPatch } from "diff";
 import { writeFileSync } from "fs";
 import { join } from "path";
 import uniqid from "uniqid";
+import merge from "../functions/merge";
 
 import ChangeType from "../types/ChangeType";
 
@@ -18,10 +19,11 @@ class DiffFile {
     public path: string,
     public current: string,
     public incoming: string,
+    public merge: string,
     public type: ChangeType
-  ) {}
+  ) { }
 
-  public write(path: string, version: "current" | "incoming"): void {
+  public write(path: string, version: "current" | "incoming" | "merge"): void {
     writeFileSync(join(path, this.path), this[version]);
   }
 }
@@ -54,9 +56,10 @@ class FileSystemDiff {
     path,
     current,
     incoming,
+    merge
   }: Omit<DiffFile, "type" | "write" | "id">): void {
-    const type = this.getDiffType(incoming, current);
-    this.files.push(new DiffFile(path, current, incoming, type));
+    const diffType = this.getDiffType(incoming, current);
+    this.files.push(new DiffFile(path, current, incoming, merge, diffType));
   }
 
   private compare(
@@ -74,6 +77,7 @@ class FileSystemDiff {
         path: join(path, file.name),
         current: currentFile?.content ?? null,
         incoming: file.content,
+        merge: currentFile?.content ? merge(currentFile.content, file.content, { stringify: true }) : file.content,
       });
     });
     current.files
@@ -83,6 +87,7 @@ class FileSystemDiff {
           path: join(path, file.name),
           current: file.content,
           incoming: null,
+          merge: file.content,
         });
       });
     incoming.folders.forEach((folder) => {
@@ -102,7 +107,7 @@ class FileSystemDiff {
   public renderTerminal(): Array<{
     file: DiffFile;
     patch: string;
-    merge: ParsedDiff;
+    merge: string;
   }> {
     return this.files
       .filter(({ type }) => type !== "unchanged")
@@ -112,7 +117,7 @@ class FileSystemDiff {
         merge: merge(
           f.incoming,
           f.current,
-          createPatch(f.path, f.current ?? "", f.incoming ?? "")
+          { stringify: true }
         ),
       }));
   }
@@ -121,45 +126,18 @@ class FileSystemDiff {
     return this.files
       .filter(({ type }) => type !== "unchanged")
       .map((f) => {
-        const patch = new DiffComputer({
+        const computed = new DiffComputer({
           oldValue: f.current ?? "",
           newValue: f.incoming ?? "",
           path: f.path,
-        }).compute().lineInfos;
+        }).compute();
         return {
           file: f,
-          patch,
+          patch: computed.lineInfos,
+          merge: merge(f.current, f.incoming),
         };
       });
   }
 }
 
 export default FileSystemDiff;
-
-// <reference types="react" />
-export {};
-declare global {
-  interface DataContextQuery {
-    /**
-     * @see https://mobsuccess.postman.co/workspace/workspace~workspace-id/request/uuid-prefix-request-id
-     */
-    "GET test /test":
-      | {
-          queryName: boolean | number | string;
-          queryType: boolean | number | string;
-        }
-      | Record<string, never>;
-  }
-
-  interface DataContextRestPutArgs {
-    /**
-     * @see https://mobsuccess.postman.co/workspace/workspace~workspace-id/request/uuid-prefix-request-id
-     */
-    "PUT test /test":
-      | {
-          queryName: boolean | number | string;
-          queryType: boolean | number | string;
-        }
-      | Record<string, never>;
-  }
-}
