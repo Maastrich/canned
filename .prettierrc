@@ -1,14 +1,5 @@
 {
-  "importOrder": [
-    "^react$",
-    "^@(.*)/(.*)",
-    "^(?!(.?./))",
-    "^(../.*)",
-    "^(./.*)"
-  ],
+  "importOrder": ["^(?!((.?./)|(@)))", "^../(.*)", "^(../.*)", "^(./.*)"],
   "importOrderSeparation": true,
-  "experimentalBabelParserPluginsList": [
-    "jsx",
-    "classProperties"
-  ]
+  "experimentalBabelParserPluginsList": ["jsx", "classProperties"]
 }

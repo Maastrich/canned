@@ -1,6 +1,12 @@
 {
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts",
+    "dist",
+    "**/__stories__/**",
+    "**/__tests__/**"
+  ],
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts", "dist", "**/__stories__/**", "**/__tests__/**"],
   "compilerOptions": {
     "allowJs": true,
     "esModuleInterop": true,
@@ -11,9 +17,6 @@
     "outDir": "dist",
     "removeComments": true,
     "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "declarationDir": ".",
     "jsx": "react"
   }
 }

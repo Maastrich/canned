@@ -6,3 +6,7 @@ src
 jest.config.js
 rollup.config.js
 tsconfig.json
+out
+.eslintrc
+.unimportedrc.json
+.prettierignore

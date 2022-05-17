@@ -1,107 +1,50 @@
 {
-  "version": "0.0.1-dev",
+  "version": "1.0.1",
   "name": "@maastrich/canned",
   "author": "Maastrich",
   "repository": "https://github.com/Maastrich/canned",
   "license": "MIT",
-  "engines": {
-    "node": "^16.13"
-  },
-  "main": "dist/canned.cjs.js",
-  "module": "dist/canned.esm.js",
+  "private": false,
+  "main": "dist/canned.js",
   "source": "src/canned.ts",
   "types": "dist/canned.d.ts",
   "scripts": {
-    "test": "npx jest",
-    "eslint": "if [ -n \"$CI\" ]; then tsc --noEmit && eslint src/** --max-warnings=0; else tsc --noEmit && eslint src/**; fi",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "codestyle": "yarn unimported && yarn eslint && yarn prettier",
+    "eslint": "if [ -n \"$CI\" ]; then eslint src/** --max-warnings=0; else eslint src/**; fi",
     "prettier": "prettier -c .",
     "prebuild": "rm -rf dist",
-    "build": "rollup -c",
-    "start": "node dist/canned.cjs.js",
+    "build": "tsc --build",
     "prebuild-watch": "rm -rf dist",
-    "build-watch": "rollup -c --watch",
-    "prepack": "npm run build",
-    "storybook": "EXTEND_ESLINT=true STORYBOOK_WHOAMI=$(whoami) start-storybook -p 6011 -s public"
+    "build-watch": "tsc --watch",
+    "prepack": "yarn build"
   },
-  "peerDependencies": {
-    "typescript": "^4.5.4"
+  "dependencies": {
+    "diff": "^5.0.0",
+    "nunjucks": "^3.2.3",
+    "simple-git": "^3.4.0",
+    "uniqid": "^5.4.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.15.7",
-    "@babel/core": "^7.15.8",
-    "@babel/plugin-transform-runtime": "^7.16.5",
-    "@babel/preset-env": "^7.15.8",
-    "@babel/preset-react": "^7.14.5",
+    "@babel/core": "^7.17.8",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.1.1",
     "@rollup/plugin-typescript": "^8.3.0",
     "@trivago/prettier-plugin-sort-imports": "^2.0.2",
-    "@types/cors": "^2.8.12",
     "@types/diff": "^5.0.2",
-    "@types/express": "^4.17.13",
-    "@types/git-diff": "^2.0.3",
-    "@types/jest": "^27.0.3",
     "@types/node": "^16.11.7",
-    "@types/open": "^6.2.1",
-    "@types/opn": "^5.5.0",
-    "@types/react": "^17.0.38",
-    "@types/yargs": "^17.0.10",
+    "@types/nunjucks": "^3.2.1",
+    "@types/uniqid": "^5.3.2",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
     "@typescript-eslint/parser": "^5.8.1",
     "eslint": "^8.11.0",
-    "jest": "^27.1.2",
     "prettier": "^2.6.0",
     "rollup": "^2.70.1",
     "rollup-plugin-peer-deps-external": "^2.2.4",
-    "ts-jest": "^27.1.2",
-    "typescript": "^4.5.4"
-  },
-  "eslintConfig": {
-    "parser": "@typescript-eslint/parser",
-    "extends": [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended"
-    ],
-    "plugins": [
-      "@typescript-eslint/eslint-plugin"
-    ],
-    "rules": {
-      "no-console": "warn",
-      "curly": "warn"
-    },
-    "overrides": [
-      {
-        "files": [
-          "*.ts",
-          "*.tsx"
-        ],
-        "rules": {
-          "@typescript-eslint/explicit-function-return-type": [
-            "error",
-            {
-              "allowExpressions": true
-            }
-          ],
-          "@typescript-eslint/explicit-module-boundary-types": [
-            "error"
-          ]
-        }
-      }
-    ]
-  },
-  "dependencies": {
-    "@types/nunjucks": "^3.2.1",
-    "body-parser": "^1.19.2",
-    "cors": "^2.8.5",
-    "diff": "^5.0.0",
-    "enquirer": "^2.3.6",
-    "express": "^4.17.3",
-    "git-diff": "^2.0.6",
-    "nunjucks": "^3.2.3",
-    "open": "^8.4.0",
-    "opn": "^6.0.0",
-    "yargs": "^17.3.1"
+    "tslib": "^2.3.1",
+    "typescript": "^4.6.2",
+    "unimported": "^1.19.1"
   }
 }
